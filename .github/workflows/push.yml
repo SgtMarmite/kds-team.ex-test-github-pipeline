@@ -79,7 +79,9 @@ jobs:
           docker run ${{ env.KBC_DEVELOPERPORTAL_APP }} python -m unittest discover
 
   tests-kbc:
-    if: ${{ variables.KBC_TEST_PROJECT_CONFIGS != '' }}
+    env:
+      KBC_TEST_PROJECT_CONFIGS: ${{ secrets.KBC_TEST_PROJECT_CONFIGS }}
+    if: ${{ env.KBC_TEST_PROJECT_CONFIGS != '' }}
     needs:
       - build
     runs-on: ubuntu-latest
