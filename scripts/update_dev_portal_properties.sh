@@ -2,25 +2,32 @@
 
 set -e
 
+# Check if the APP_NAME environment variable is set
 if [ -z "$KBC_DEVELOPERPORTAL_APP" ]; then
     echo "Error: APP_NAME environment variable is not set."
     exit 1
 fi
 
-# Obtain the component repository and log in
+# Pull the latest version of the developer portal CLI Docker image
 docker pull quay.io/keboola/developer-portal-cli-v2:latest
 
-echo "Component properties to update: $KBC_DEVELOPERPORTAL_APP"
-echo "KBC_DEVELOPERPORTAL_VENDOR: $KBC_DEVELOPERPORTAL_VENDOR"
-
+# Function to update a property for the given app ID
 update_property() {
     local app_id="$1"
     local prop_name="$2"
     local file_path="$3"
+
+    if [ ! -f "$file_path" ]; then
+        echo "File '$file_path' not found. Skipping update for property '$prop_name' of application '$app_id'."
+        return
+    fi
+
     local value=$(<"$file_path")
+
     echo "Updating $prop_name for $app_id"
     echo "$value"
-    if [ ! -z "$value" ]; then
+
+    if [ -n "$value" ]; then
         docker run --rm \
             -e KBC_DEVELOPERPORTAL_USERNAME \
             -e KBC_DEVELOPERPORTAL_PASSWORD \
@@ -32,6 +39,8 @@ update_property() {
         exit 1
     fi
 }
+
+app_id="$KBC_DEVELOPERPORTAL_APP"
 
 update_property "$app_id" "longDescription" "component_config/component_long_description.md"
 update_property "$app_id" "configurationSchema" "component_config/configSchema.json"
