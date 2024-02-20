@@ -95,6 +95,8 @@ jobs:
           configs: ${{ env.KBC_TEST_PROJECT_CONFIGS }}
 
   deploy:
+    env:
+      KBC_DEVELOPERPORTAL_PASSWORD: ${{ secrets.KBC_DEVELOPERPORTAL_PASSWORD }}
     needs:
       - build
       - tests
