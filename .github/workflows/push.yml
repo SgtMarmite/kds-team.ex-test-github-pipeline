@@ -79,7 +79,6 @@ jobs:
   tests-kbc:
     needs:
       - build
-    if: ${{ env.KBC_TEST_PROJECT_CONFIGS && env.KBC_STORAGE_TOKEN }}
     runs-on: ubuntu-latest
     steps:
       - name: Run KBC test jobs
