@@ -3,7 +3,7 @@ on: [ push ]
 concurrency: ci-${{ github.ref }} # to avoid tag collisions in the ECR
 env:
   DOCKERHUB_USER: "keboolabot"
-  # DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+  DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
   KBC_DEVELOPERPORTAL_APP: "kds-team.ex-test-github-pipeline"
   KBC_DEVELOPERPORTAL_VENDOR: "kds-team"
   KBC_DEVELOPERPORTAL_USERNAME: "kds-team+github"
@@ -22,8 +22,8 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Docker login
-      if: ${{ env.DOCKERHUB_USER }} && ${{ secrets.DOCKERHUB_TOKEN }}
-      run: docker login --username "${{ env.DOCKERHUB_USER }}" --password "${{ secrets.DOCKERHUB_TOKEN }}"
+      if: ${{ env.DOCKERHUB_USER }} && ${{ env.DOCKERHUB_TOKEN }}
+      run: docker login --username "${{ env.DOCKERHUB_USER }}" --password "${{ env.DOCKERHUB_TOKEN }}"
 
     - name: Build image
       run: docker build -t ${{ env.KBC_DEVELOPERPORTAL_APP }} .
@@ -38,7 +38,7 @@ jobs:
         echo "app_image_tag=$TAG" >> $GITHUB_OUTPUT
 
     - name: Push image to ECR
-      if: ${{ inputs.DOCKERHUB_USER }} && ${{ secrets.DOCKERHUB_TOKEN }}
+      if: ${{ inputs.DOCKERHUB_USER }} && ${{ env.DOCKERHUB_TOKEN }}
       uses: keboola/action-push-to-ecr@master
       with:
         vendor: ${{ env.KBC_DEVELOPERPORTAL_VENDOR }}
@@ -58,7 +58,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Pull image from ECR
-        if: ${{ env.DOCKERHUB_USER }} && ${{ secrets.DOCKERHUB_TOKEN }}
+        if: ${{ env.DOCKERHUB_USER }} && ${{ env.DOCKERHUB_TOKEN }}
         uses: keboola/action-pull-from-ecr@master
         with:
           vendor: ${{ env.KBC_DEVELOPERPORTAL_VENDOR }}
