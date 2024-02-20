@@ -1,0 +1,82 @@
+name: Github Actions
+on: [ push ]
+concurrency: ci-${{ github.ref }} # to avoid tag collisions in the ECR
+env:
+  DOCKERHUB_USER: "keboolabot"
+  DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+  KBC_DEVELOPERPORTAL_APP: "kds-team.ex-test-github-pipeline"
+  KBC_DEVELOPERPORTAL_VENDOR: "kds-team"
+  KBC_DEVELOPERPORTAL_USERNAME: "kds-team+github"
+
+  # Test KBC project: https://connection.keboola.com/admin/projects/XXXX
+  KBC_TEST_PROJECT_CONFIGS: "" # space separated list of config ids
+
+jobs:
+  variables:
+    runs-on: ubuntu-latest
+    outputs:
+      KBC_DEVELOPERPORTAL_APP: ${{ steps.step1.outputs.KBC_DEVELOPERPORTAL_APP }}
+      KBC_DEVELOPERPORTAL_VENDOR: ${{ steps.step1.outputs.KBC_DEVELOPERPORTAL_VENDOR }}
+      KBC_DEVELOPERPORTAL_USERNAME: ${{ steps.step1.outputs.KBC_DEVELOPERPORTAL_USERNAME }}
+      KBC_TEST_PROJECT_CONFIGS: ${{ steps.step1.outputs.KBC_TEST_PROJECT_CONFIGS }}
+      DOCKERHUB_USER: ${{ steps.step1.outputs.DOCKERHUB_USER }}
+    steps:
+      - name: Print inputs passed to the reusable workflow
+        id: step1
+        run: |
+          echo "KBC_DEVELOPERPORTAL_APP=$KBC_DEVELOPERPORTAL_APP" >> $GITHUB_OUTPUT
+          echo "KBC_DEVELOPERPORTAL_VENDOR=$KBC_DEVELOPERPORTAL_VENDOR" >> $GITHUB_OUTPUT
+          echo "KBC_DEVELOPERPORTAL_USERNAME=$KBC_DEVELOPERPORTAL_USERNAME" >> $GITHUB_OUTPUT
+          echo "KBC_TEST_PROJECT_CONFIGS=$KBC_TEST_PROJECT_CONFIGS" >> $GITHUB_OUTPUT
+          echo "DOCKERHUB_USER=$DOCKERHUB_USER" >> $GITHUB_OUTPUT
+
+  build:
+    needs:
+      - variables
+    uses: ./.github/workflows/build.yml
+    with:
+      KBC_DEVELOPERPORTAL_APP: ${{ needs.variables.outputs.KBC_DEVELOPERPORTAL_APP }}
+      KBC_DEVELOPERPORTAL_VENDOR: ${{ needs.variables.outputs.KBC_DEVELOPERPORTAL_VENDOR }}
+      KBC_DEVELOPERPORTAL_USERNAME: ${{ needs.variables.outputs.KBC_DEVELOPERPORTAL_USERNAME }}
+      DOCKERHUB_USER: ${{ needs.variables.outputs.DOCKERHUB_USER }}
+    secrets: inherit
+
+  tests:
+    needs:
+      - build
+      - variables
+    uses: ./.github/workflows/tests.yml
+    with:
+      KBC_DEVELOPERPORTAL_APP: ${{ needs.variables.outputs.KBC_DEVELOPERPORTAL_APP }}
+      KBC_DEVELOPERPORTAL_VENDOR: ${{ needs.variables.outputs.KBC_DEVELOPERPORTAL_VENDOR }}
+      KBC_DEVELOPERPORTAL_USERNAME: ${{ needs.variables.outputs.KBC_DEVELOPERPORTAL_USERNAME }}
+      TAG: ${{ needs.build.outputs.app_image_tag }}
+    secrets: inherit
+
+  tests-kbc:
+    needs:
+      - build
+      - variables
+    uses: ./.github/workflows/tests-kbc.yml
+    with:
+      KBC_DEVELOPERPORTAL_APP: ${{ needs.variables.outputs.KBC_DEVELOPERPORTAL_APP }}
+      TAG: ${{ needs.build-python.outputs.app_image_tag }}
+      KBC_DEVELOPERPORTAL_VENDOR: ${{ needs.variables.outputs.KBC_DEVELOPERPORTAL_VENDOR }}
+      KBC_TEST_PROJECT_CONFIGS: ${{ needs.variables.outputs.KBC_TEST_PROJECT_CONFIGS }}
+    secrets: inherit
+
+  deploy:
+    if : startsWith(github.ref, 'refs/tags/') && needs.build-python.outputs.is_semantic_tag == 'true'
+    needs:
+      - build
+      - tests
+      - tests-kbc
+      - variables
+    uses: ./.github/workflows/deploy.yml
+    with:
+      KBC_DEVELOPERPORTAL_APP: ${{ needs.variables.outputs.KBC_DEVELOPERPORTAL_APP }}
+      KBC_DEVELOPERPORTAL_VENDOR: ${{ needs.variables.outputs.KBC_DEVELOPERPORTAL_VENDOR }}
+      KBC_DEVELOPERPORTAL_USERNAME: ${{ needs.variables.outputs.KBC_DEVELOPERPORTAL_USERNAME }}
+      TAG: ${{ needs.build-python.outputs.app_image_tag }}
+      IS_SEMANTIC_TAG: ${{ needs.build-python.outputs.is_semantic_tag }}
+    secrets: inherit

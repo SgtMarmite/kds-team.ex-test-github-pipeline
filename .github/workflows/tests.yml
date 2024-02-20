@@ -1,0 +1,42 @@
+on:
+  workflow_call:
+    inputs:
+      KBC_DEVELOPERPORTAL_VENDOR:
+        required: true
+        type: string
+      KBC_DEVELOPERPORTAL_APP:
+        required: true
+        type: string
+      KBC_DEVELOPERPORTAL_USERNAME:
+        required: true
+        type: string
+      TAG:
+        required: false
+        type: string
+      DOCKERHUB_USER:
+        required: false
+        type: string
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Pull image from ECR
+        if: ${{ inputs.DOCKERHUB_USER }} and ${{ secrets.DOCKERHUB_TOKEN }}
+        uses: keboola/action-pull-from-ecr@master
+        with:
+          vendor: ${{ inputs.KBC_DEVELOPERPORTAL_VENDOR }}
+          app_id: ${{ inputs.KBC_DEVELOPERPORTAL_APP }}
+          username: ${{ inputs.KBC_DEVELOPERPORTAL_USERNAME }}
+          password: ${{ secrets.KBC_DEVELOPERPORTAL_PASSWORD }}
+          tag: ${{ inputs.TAG }}
+          target_image: ${{ inputs.KBC_DEVELOPERPORTAL_APP}}
+          tag_as_latest: true
+
+      - name: Run tests
+        run: |
+          docker run ${{ inputs.KBC_DEVELOPERPORTAL_APP }} flake8 . --config=flake8.cfg
+          echo "Running unit-tests..."
+          docker run ${{ inputs.KBC_DEVELOPERPORTAL_APP }} python -m unittest discover
