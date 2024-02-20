@@ -1,0 +1,45 @@
+on:
+  workflow_call:
+    inputs:
+      KBC_DEVELOPERPORTAL_VENDOR:
+        required: true
+        type: string
+      KBC_DEVELOPERPORTAL_APP:
+        required: true
+        type: string
+      KBC_DEVELOPERPORTAL_USERNAME:
+        required: true
+        type: string
+      TAG:
+        required: false
+        type: string
+      IS_SEMANTIC_TAG:
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    env:
+        KBC_DEVELOPERPORTAL_USERNAME: ${{ inputs.KBC_DEVELOPERPORTAL_USERNAME }}
+        KBC_DEVELOPERPORTAL_PASSWORD: ${{ secrets.KBC_DEVELOPERPORTAL_PASSWORD }}
+        KBC_DEVELOPERPORTAL_VENDOR: ${{ inputs.KBC_DEVELOPERPORTAL_VENDOR }}
+        KBC_DEVELOPERPORTAL_APP: ${{ inputs.KBC_DEVELOPERPORTAL_APP }}
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set tag in the Developer Portal
+        uses: keboola/action-set-tag-developer-portal@master
+        with:
+          vendor: ${{ inputs.KBC_DEVELOPERPORTAL_VENDOR }}
+          app_id: ${{ inputs.KBC_DEVELOPERPORTAL_APP }}
+          username: ${{ inputs.KBC_DEVELOPERPORTAL_USERNAME }}
+          password: ${{ secrets.KBC_DEVELOPERPORTAL_PASSWORD }}
+          tag: ${{ inputs.TAG }}
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Update developer portal properties
+        run: |
+          chmod +x scripts/update_dev_portal_properties.sh
+          scripts/update_dev_portal_properties.sh
