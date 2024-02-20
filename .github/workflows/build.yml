@@ -46,7 +46,7 @@ jobs:
         echo "app_image_tag=$TAG" >> $GITHUB_OUTPUT
 
     - name: Push image to ECR
-      if: ${{ inputs.DOCKERHUB_USER }} and ${{ secrets.DOCKERHUB_TOKEN }}
+      if: ${{ inputs.DOCKERHUB_USER }}
       uses: keboola/action-push-to-ecr@master
       with:
         vendor: ${{ inputs.KBC_DEVELOPERPORTAL_VENDOR }}
