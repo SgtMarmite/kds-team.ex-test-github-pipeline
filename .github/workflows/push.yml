@@ -3,8 +3,8 @@ on: [ push ]
 concurrency: ci-${{ github.ref }} # to avoid tag collisions in the ECR
 env:
   DOCKERHUB_USER: "keboolabot"
-  DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-  KBC_STORAGE_TOKEN: ${{ secrets.KBC_STORAGE_TOKEN }}
+  # DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+  # KBC_STORAGE_TOKEN: ${{ secrets.KBC_STORAGE_TOKEN }}
   KBC_DEVELOPERPORTAL_APP: "kds-team.ex-test-github-pipeline"
   KBC_DEVELOPERPORTAL_VENDOR: "kds-team"
   KBC_DEVELOPERPORTAL_USERNAME: "kds-team+github"
@@ -15,6 +15,8 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
     outputs:
       app_image_tag: ${{ steps.tag.outputs.app_image_tag }}
       is_semantic_tag: ${{ steps.tag.outputs.is_semantic_tag }}
@@ -39,7 +41,7 @@ jobs:
         echo "app_image_tag=$TAG" >> $GITHUB_OUTPUT
 
     - name: Push image to ECR
-      if: ${{ inputs.DOCKERHUB_USER }} && ${{ env.DOCKERHUB_TOKEN }}
+      if: ${{ env.DOCKERHUB_USER }} && ${{ env.DOCKERHUB_TOKEN }}
       uses: keboola/action-push-to-ecr@master
       with:
         vendor: ${{ env.KBC_DEVELOPERPORTAL_VENDOR }}
