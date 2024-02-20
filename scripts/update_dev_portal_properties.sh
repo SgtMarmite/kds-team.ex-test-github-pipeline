@@ -1,111 +1,42 @@
 #!/usr/bin/env bash
 
 set -e
-# Obtain the component repository and log in
-docker pull quay.io/keboola/developer-portal-cli-v2:latest
 
-
-# Update properties in Keboola Developer Portal
-echo "Updating long description"
-value=`cat component_config/component_long_description.md`
-echo "$value"
-if [ ! -z "$value" ]
-then
-    docker run --rm \
-            -e KBC_DEVELOPERPORTAL_USERNAME \
-            -e KBC_DEVELOPERPORTAL_PASSWORD \
-            quay.io/keboola/developer-portal-cli-v2:latest \
-            update-app-property ${KBC_DEVELOPERPORTAL_VENDOR} ${KBC_DEVELOPERPORTAL_APP} longDescription --value="$value"
-else
-    echo "longDescription is empty!"
+if [ -z "$KBC_DEVELOPERPORTAL_APP" ]; then
+    echo "Error: APP_NAME environment variable is not set."
     exit 1
 fi
 
-echo "Updating config schema"
-value=`cat component_config/configSchema.json`
-echo "$value"
-if [ ! -z "$value" ]
-then
-    docker run --rm \
+# Obtain the component repository and log in
+docker pull quay.io/keboola/developer-portal-cli-v2:latest
+
+echo "Component properties to update: $KBC_DEVELOPERPORTAL_APP"
+echo "KBC_DEVELOPERPORTAL_VENDOR: $KBC_DEVELOPERPORTAL_VENDOR"
+
+update_property() {
+    local app_id="$1"
+    local prop_name="$2"
+    local file_path="$3"
+    local value=$(<"$file_path")
+    echo "Updating $prop_name for $app_id"
+    echo "$value"
+    if [ ! -z "$value" ]; then
+        docker run --rm \
             -e KBC_DEVELOPERPORTAL_USERNAME \
             -e KBC_DEVELOPERPORTAL_PASSWORD \
             quay.io/keboola/developer-portal-cli-v2:latest \
-            update-app-property ${KBC_DEVELOPERPORTAL_VENDOR} ${KBC_DEVELOPERPORTAL_APP} configurationSchema --value="$value"
-else
-    echo "configurationSchema is empty!"
-fi
+            update-app-property "$KBC_DEVELOPERPORTAL_VENDOR" "$app_id" "$prop_name" --value="$value"
+        echo "Property $prop_name updated successfully for $app_id"
+    else
+        echo "$prop_name is empty for $app_id!"
+        exit 1
+    fi
+}
 
-echo "Updating row config schema"
-value=`cat component_config/configRowSchema.json`
-echo "$value"
-if [ ! -z "$value" ]
-then
-    docker run --rm \
-            -e KBC_DEVELOPERPORTAL_USERNAME \
-            -e KBC_DEVELOPERPORTAL_PASSWORD \
-            quay.io/keboola/developer-portal-cli-v2:latest \
-            update-app-property ${KBC_DEVELOPERPORTAL_VENDOR} ${KBC_DEVELOPERPORTAL_APP} configurationRowSchema --value="$value"
-else
-    echo "configurationRowSchema is empty!"
-fi
-
-
-echo "Updating config description"
-
-value=`cat component_config/configuration_description.md`
-echo "$value"
-if [ ! -z "$value" ]
-then
-    docker run --rm \
-            -e KBC_DEVELOPERPORTAL_USERNAME \
-            -e KBC_DEVELOPERPORTAL_PASSWORD \
-            quay.io/keboola/developer-portal-cli-v2:latest \
-            update-app-property ${KBC_DEVELOPERPORTAL_VENDOR} ${KBC_DEVELOPERPORTAL_APP} configurationDescription --value="$value"
-else
-    echo "configurationDescription is empty!"
-fi
-
-
-echo "Updating short description"
-
-value=`cat component_config/component_short_description.md`
-echo "$value"
-if [ ! -z "$value" ]
-then
-    docker run --rm \
-            -e KBC_DEVELOPERPORTAL_USERNAME \
-            -e KBC_DEVELOPERPORTAL_PASSWORD \
-            quay.io/keboola/developer-portal-cli-v2:latest \
-            update-app-property ${KBC_DEVELOPERPORTAL_VENDOR} ${KBC_DEVELOPERPORTAL_APP} shortDescription --value="$value"
-else
-    echo "shortDescription is empty!"
-fi
-
-echo "Updating logger settings"
-
-value=`cat component_config/logger`
-echo "$value"
-if [ ! -z "$value" ]
-then
-    docker run --rm \
-            -e KBC_DEVELOPERPORTAL_USERNAME \
-            -e KBC_DEVELOPERPORTAL_PASSWORD \
-            quay.io/keboola/developer-portal-cli-v2:latest \
-            update-app-property ${KBC_DEVELOPERPORTAL_VENDOR} ${KBC_DEVELOPERPORTAL_APP} logger --value="$value"
-else
-    echo "logger type is empty!"
-fi
-
-echo "Updating logger configuration"
-value=`cat component_config/loggerConfiguration.json`
-echo "$value"
-if [ ! -z "$value" ]
-then
-    docker run --rm \
-            -e KBC_DEVELOPERPORTAL_USERNAME \
-            -e KBC_DEVELOPERPORTAL_PASSWORD \
-            quay.io/keboola/developer-portal-cli-v2:latest \
-            update-app-property ${KBC_DEVELOPERPORTAL_VENDOR} ${KBC_DEVELOPERPORTAL_APP} loggerConfiguration --value="$value"
-else
-    echo "loggerConfiguration is empty!"
-fi
+update_property "$app_id" "longDescription" "component_config/component_long_description.md"
+update_property "$app_id" "configurationSchema" "component_config/configSchema.json"
+update_property "$app_id" "configurationRowSchema" "component_config/configRowSchema.json"
+update_property "$app_id" "configurationDescription" "component_config/configuration_description.md"
+update_property "$app_id" "shortDescription" "component_config/component_short_description.md"
+update_property "$app_id" "logger" "component_config/logger"
+update_property "$app_id" "loggerConfiguration" "component_config/loggerConfiguration.json"
