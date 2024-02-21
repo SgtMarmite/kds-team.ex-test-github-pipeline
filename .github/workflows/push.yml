@@ -45,13 +45,13 @@ jobs:
     - name: Push image to ECR
       uses: keboola/action-push-to-ecr@master
       with:
-        vendor: $KBC_DEVELOPERPORTAL_VENDOR
-        app_id: $KBC_DEVELOPERPORTAL_APP
-        username: $KBC_DEVELOPERPORTAL_USERNAME
+        vendor: ${{ env.KBC_DEVELOPERPORTAL_VENDOR }}
+        app_id: ${{ env.KBC_DEVELOPERPORTAL_APP }}
+        username: ${{ env.KBC_DEVELOPERPORTAL_USERNAME }}
         password: ${{ secrets.KBC_DEVELOPERPORTAL_PASSWORD }}
         tag: ${{ steps.tag.outputs.app_image_tag }}
         push_latest: ${{ steps.tag.outputs.is_semantic_tag }}
-        source_image: $KBC_DEVELOPERPORTAL_APP
+        source_image: ${{ env.KBC_DEVELOPERPORTAL_APP }}
 
   tests:
     runs-on: ubuntu-latest
