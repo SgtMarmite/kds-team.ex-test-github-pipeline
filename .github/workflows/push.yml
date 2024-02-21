@@ -3,14 +3,16 @@ on: [ push ]
 concurrency: ci-${{ github.ref }} # to avoid tag collisions in the ECR
 env:
   DOCKERHUB_USER: "keboolabot"
-  # DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-  # KBC_STORAGE_TOKEN: ${{ secrets.KBC_STORAGE_TOKEN }}
   KBC_DEVELOPERPORTAL_APP: "kds-team.ex-test-github-pipeline"
   KBC_DEVELOPERPORTAL_VENDOR: "kds-team"
   KBC_DEVELOPERPORTAL_USERNAME: "kds-team+github"
 
+  # to be set in repository secrets:
+  # DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }} # required for pushing to ECR
+  # KBC_STORAGE_TOKEN: ${{ secrets.KBC_STORAGE_TOKEN }} # required for running KBC tests (optional)
+
   # Test KBC project: https://connection.keboola.com/admin/projects/XXXX
-  KBC_TEST_PROJECT_CONFIGS: "" # space separated list of config ids
+  KBC_TEST_PROJECT_CONFIGS: "" # space separated list of config ids (optional
 
 jobs:
   build:
@@ -41,7 +43,6 @@ jobs:
         echo "app_image_tag=$TAG" >> $GITHUB_OUTPUT
 
     - name: Push image to ECR
-      if: ${{ env.DOCKERHUB_USER }} && ${{ env.DOCKERHUB_TOKEN }}
       uses: keboola/action-push-to-ecr@master
       with:
         vendor: ${{ env.KBC_DEVELOPERPORTAL_VENDOR }}
@@ -80,7 +81,7 @@ jobs:
 
   tests-kbc:
     env:
-      KBC_TEST_PROJECT_CONFIGS: ${{ secrets.KBC_TEST_PROJECT_CONFIGS }}
+      KBC_TEST_PROJECT_CONFIGS: ${{ variables.KBC_TEST_PROJECT_CONFIGS }}
     needs:
       - build
     runs-on: ubuntu-latest
