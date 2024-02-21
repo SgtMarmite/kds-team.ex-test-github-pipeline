@@ -62,7 +62,6 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Pull image from ECR
-        if: env.DOCKERHUB_TOKEN
         uses: keboola/action-pull-from-ecr@master
         with:
           vendor: ${{ env.KBC_DEVELOPERPORTAL_VENDOR }}
