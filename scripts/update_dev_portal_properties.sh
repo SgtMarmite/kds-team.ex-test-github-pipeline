@@ -49,3 +49,9 @@ update_property "$app_id" "configurationDescription" "component_config/configura
 update_property "$app_id" "shortDescription" "component_config/component_short_description.md"
 update_property "$app_id" "logger" "component_config/logger"
 update_property "$app_id" "loggerConfiguration" "component_config/loggerConfiguration.json"
+update_property "$app_id" "licenseUrl" "component_config/licenseUrl.md"
+update_property "$app_id" "documentationUrl" "component_config/documentationUrl.md"
+update_property "$app_id" "sourceCodeUrl" "component_config/sourceCodeUrl.md"
+update_property "$app_id" "uiOptions" "component_config/uiOptions.txt"
+
+

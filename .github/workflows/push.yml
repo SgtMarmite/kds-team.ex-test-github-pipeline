@@ -1,14 +1,15 @@
-name: Github Actions
+name: Keboola Component Deployment Pipeline
 on: [ push ]
 concurrency: ci-${{ github.ref }} # to avoid tag collisions in the ECR
 env:
-  DOCKERHUB_USER: "keboolabot"
   KBC_DEVELOPERPORTAL_APP: "kds-team.ex-test-github-pipeline"
   KBC_DEVELOPERPORTAL_VENDOR: "kds-team"
   KBC_DEVELOPERPORTAL_USERNAME: "kds-team+github"
 
-  # to be set in repository secrets:
+  # For Docker login (Optional:
+  DOCKERHUB_USER: "keboolabot"
   DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }} # required for pushing to ECR
+
   # KBC_STORAGE_TOKEN: ${{ secrets.KBC_STORAGE_TOKEN }} # required for running KBC tests (optional)
   # KBC_DEVELOPERPORTAL_PASSWORD: ${{ secrets.KBC_DEVELOPERPORTAL_PASSWORD }}
 
