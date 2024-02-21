@@ -11,8 +11,8 @@ env:
   # DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }} # required for pushing to ECR
   # KBC_STORAGE_TOKEN: ${{ secrets.KBC_STORAGE_TOKEN }} # required for running KBC tests (optional)
 
-  # Test KBC project: https://connection.keboola.com/admin/projects/XXXX
-  KBC_TEST_PROJECT_CONFIGS: "" # space separated list of config ids (optional
+  # Test KBC project: https://connection.keboola.com/admin/projects/5415
+  KBC_TEST_PROJECT_CONFIGS: "1089160256" # space separated list of config ids (optional)
 
 jobs:
   build:
