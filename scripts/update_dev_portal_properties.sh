@@ -52,6 +52,6 @@ update_property "$app_id" "loggerConfiguration" "component_config/loggerConfigur
 update_property "$app_id" "licenseUrl" "component_config/licenseUrl.md"
 update_property "$app_id" "documentationUrl" "component_config/documentationUrl.md"
 update_property "$app_id" "sourceCodeUrl" "component_config/sourceCodeUrl.md"
-update_property "$app_id" "uiOptions" "component_config/uiOptions.txt"
+update_property "$app_id" "uiOptions" "component_config/uiOptions.md"
 
 
