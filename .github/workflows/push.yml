@@ -82,12 +82,13 @@ jobs:
   tests-kbc:
     env:
       KBC_TEST_PROJECT_CONFIGS: ${{ vars.KBC_TEST_PROJECT_CONFIGS }}
+      KBC_STORAGE_TOKEN: ${{ secrets.KBC_STORAGE_TOKEN }}
     needs:
       - build
     runs-on: ubuntu-latest
     steps:
       - name: Run KBC test jobs
-        if: ${{ env.KBC_TEST_PROJECT_CONFIGS != '' }} && ${{ secrets.KBC_STORAGE_TOKEN != '' }}
+        if: ${{ env.KBC_TEST_PROJECT_CONFIGS != '' }} && ${{ env.KBC_STORAGE_TOKEN != '' }}
         uses: keboola/action-run-configs-parallel@master
         with:
           token: ${{ secrets.KBC_STORAGE_TOKEN }}
